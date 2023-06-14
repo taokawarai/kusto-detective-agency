@@ -68,4 +68,49 @@ PhoneCalls
 | where Properties1.DisconnectedBy == "Destination"
 | take 10
 ```
+```
+PhoneCalls
+| where EventType == "Connect"
+| join kind=inner 
+(
+    PhoneCalls
+    | where EventType == "Disconnect"
+) on CallConnectionId
+| where Properties1.DisconnectedBy == "Destination"
+| extend meantime = (Timestamp1 - Timestamp)
+| take 10
+```
+
+```
+PhoneCalls
+| where EventType == "Connect"
+| extend Origin = toreal(Properties.Origin), Dest = toreal(Properties.Destination)
+| join kind=inner 
+(
+    PhoneCalls
+    | where EventType == "Disconnect"
+) on CallConnectionId
+| where Properties1.DisconnectedBy == "Destination"
+| summarize count() by Origin, Dest
+| top 10 by count_
+```
+
+<img width="511" alt="image" src="https://github.com/taokawarai/kusto-detective-agency/assets/35896206/6a211364-b34d-4b76-8fce-3d9fef8b5a4c">
+
+```
+PhoneCalls
+| where EventType == "Connect"
+| extend Origin = toreal(Properties.Origin), Dest = toreal(Properties.Destination)
+| join kind=inner 
+(
+    PhoneCalls
+    | where EventType == "Disconnect"
+) on CallConnectionId
+| where Properties1.DisconnectedBy == "Destination"
+| where Origin == "6612236253" and Dest == "6177745322"
+| extend meantime = (Timestamp1 - Timestamp)
+| project Timestamp, meantime
+| render linechart 
+```
+<img width="732" alt="image" src="https://github.com/taokawarai/kusto-detective-agency/assets/35896206/16db7d64-a7cd-4a2b-8b15-64e42ba2e121">
 
